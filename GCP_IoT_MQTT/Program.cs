@@ -24,6 +24,7 @@ namespace GCP_IoT_MQTT
                ,{"aud","ieccloudiot"} //aud is gcp project
             };
 
+
             
             X509Certificate2 x509Certificate2 = new X509Certificate2(@"C:\temp.myCode\GCP_IoT_MQTT\GCP_IoT_MQTT\bin\Debug\netcoreapp2.0\ia.p12"
                 , "123456789", X509KeyStorageFlags.Exportable);
