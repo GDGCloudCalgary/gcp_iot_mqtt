@@ -21,9 +21,9 @@ Note: eventually you need to have:
 	roots.pem downloaded from http://pki.google.com/roots.pem
 
 Run the application:
- dotnet gcp_iot_sample.dll -p {projectId} -r {registryId} -d {deviceId} -a {cloudRegion}
+ dotnet gcp_iot_sample.dll -p {projectId} -r {registryId} -d {deviceId} -a {cloudRegion} -t {topic}
 
-dotnet gcp_iot_sample.dll -p projiotid -r reg1 -d dev1 -a us-central1
+dotnet gcp_iot_sample.dll -p projiotid -r reg1 -d dev1 -a us-central1 -t events
 MessageId = 1 Published = True
 MessageId = 2 Published = True
 MessageId = 3 Published = True
