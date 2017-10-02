@@ -8,28 +8,49 @@ using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using GoogleCloudIoTSamples;
 using System.Reflection;
-using System.Diagnostics;
 
 namespace GoogleCloudIoTSample
 {
   
-
-
     public class IotSample
     {
         static ushort msgId;
         static string currentExcutionPath = System.IO.Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        static string sRoots   = "roots.pem"; // roots.pem downloaded from http://pki.google.com/roots.pem
+        static string sP12Cert = "ia.p12"; // This holds the private key and certificate and is the format most modern signing utilities use.
+        static string sP12Pass = "123456789"; // Your certificate password, note: hardcoding password isn't a good security practice
+        //static string sTopic = "events"; // Topic in pub/sub
 
-        private static void client_MqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
+        /// <summary>
+        /// event for published message(s)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void Client_MqttMsgPublished(object sender, MqttMsgPublishedEventArgs e)
         {
-            Console.WriteLine("MessageId = " + e.MessageId + " Published = " + e.IsPublished);
+            Console.WriteLine("MessageId = " + e.MessageId + ", Is Published = " + e.IsPublished);
         }
 
-        private static void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        /// <summary>
+        /// event handler to handle the incoming message
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void Client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
         {
-            Console.WriteLine("Received = " + Encoding.UTF8.GetString(e.Message) + " on topic " + e.Topic);
+            Console.WriteLine("Received = " + Encoding.UTF8.GetString(e.Message) + ", on topic " + e.Topic);
         }
 
+        /// <summary>
+        /// event handler to handle subscription
+        /// not implemented at this time
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void client_MqttMsgSubscribed(object sender, MqttMsgSubscribedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
         static void Main(string[] args)
         {
@@ -48,7 +69,7 @@ namespace GoogleCloudIoTSample
 
             DateTime dtnow = DateTime.Now;
             long iat = ((DateTimeOffset)dtnow).ToUnixTimeSeconds();
-            long exp = iat + 3600; // Token expires in 3600 seconds
+            long exp = iat + 3600; // Token expires in 3600 seconds, or whatever duration you need.
 
             var claims = new Dictionary<string, object>()
             {
@@ -57,10 +78,10 @@ namespace GoogleCloudIoTSample
                ,{"aud",options.projectId} // audience is gcp project
             };
 
-            X509Certificate x509_roots = new X509Certificate(currentExcutionPath + "\\" + "roots.pem");
+            X509Certificate x509_roots = new X509Certificate(currentExcutionPath + "\\" + sRoots);
 
-            X509Certificate2 x509Certificate2 = new X509Certificate2(currentExcutionPath + "\\" + "ia.p12"
-                , "123456789" // Your certificate password, note: hardcoding password isn't a good security practice
+            X509Certificate2 x509Certificate2 = new X509Certificate2(currentExcutionPath + "\\" + sP12Cert
+                , sP12Pass 
                 , X509KeyStorageFlags.Exportable);
 
             string token = Jose.JWT.Encode(claims
@@ -76,22 +97,27 @@ namespace GoogleCloudIoTSample
                 , MqttSslProtocols.TLSv1_2
                 );
 
+            // Know if a subscription to a topic is completed and registered to the broker
+            // client.MqttMsgSubscribed += client_MqttMsgSubscribed;
+
             // Subscribe to be notified about received messages,
-            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
+            client.MqttMsgPublishReceived += Client_MqttMsgPublishReceived;
 
             // event handler for published messages
-            client.MqttMsgPublished += client_MqttMsgPublished;
+            client.MqttMsgPublished += Client_MqttMsgPublished;
 
             // Building clientId as required by google mqtt 
             String clientId = "projects/" + options.projectId + "/locations/" + options.cloudRegion + "/registries/" + options.registryId + "/devices/" + options.deviceId;
-            String topic = "/devices/" + options.deviceId + "/events";
+            String topic = "/devices/" + options.deviceId + "/" + options.topic;
+
+
             // Username is null, authentication via JWT
             client.Connect(clientId, null, token); 
 
             if (client.IsConnected)
             {
                 //publish 10 messages
-                for (int i = 0; i <= 10; i++)
+                for (int i = 0; i < 10; i++)
                 {
 
                     Random rnd = new Random(); // just a random number for sample date
@@ -109,10 +135,25 @@ namespace GoogleCloudIoTSample
                         , MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE
                         , false); //publish a retained message if set to true
 
-                    // 1000ms between each publish
-                    System.Threading.Thread.Sleep(1000);
+                     // 1000ms between each publish
+                     System.Threading.Thread.Sleep(1000);
                 }
-                client.Disconnect(); // Flush on disconnect
+
+                // Flushing queued messages to broker
+                try
+                {
+                    client.Disconnect(); // Flush on disconnect
+                }
+                catch
+                {
+                    Console.WriteLine("Error publishing message(s)" + ", failed topic = " + topic);
+                    Environment.Exit(0);
+                }
+                finally
+                {
+                    // do something if needed
+                }
+                
             }
             else
             {
@@ -120,5 +161,6 @@ namespace GoogleCloudIoTSample
                 Environment.Exit(0);
             }
         }
+
     }
 }

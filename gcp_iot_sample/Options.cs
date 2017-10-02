@@ -16,6 +16,8 @@ namespace GoogleCloudIoTSamples
         [Option('a', "cloudRegion", HelpText = "Google Cloud IoT Project Cloud Region.", Required = true)]
         public string cloudRegion { get; set; }
 
+        [Option('t', "topic", HelpText = "Google Cloud pub/sub topic.", Required = true)]
+        public string topic { get; set; }
 
         [Option('h', "help", HelpText = "Usage: dotnet gcp_iot_sample.dll -p projiotid", Required = false, DefaultValue = false)]
         public bool Help { get; set; }

@@ -2,7 +2,7 @@
   "profiles": {
     "gcp_iot_sample": {
       "commandName": "Project",
-      "commandLineArgs": "-p projiotid -r reg1 -d dev1 -a us-central1"
+      "commandLineArgs": "-p projiotid -r reg1 -d dev1 -a us-central1 -t events2"
     }
   }
 }
