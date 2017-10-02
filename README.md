@@ -1,4 +1,4 @@
-# Cloud IoT Core .net Sample
+# Google Cloud IoT Core .net Sample
 This folder contains .net core samples that demonstrate an overview of the Google Cloud IoT Core platform.
 
 This sample publishes MQTT messages based on .net core to Google Cloud Core IoT API.
