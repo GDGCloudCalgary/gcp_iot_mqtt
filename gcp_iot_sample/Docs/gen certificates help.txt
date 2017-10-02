@@ -28,7 +28,7 @@ Run the application:
 
 
 
- saleh@projiotid:~$ gcloud beta pubsub subscriptions pull --auto-ack --max-messages=10 projects/projiotid/subscriptions/dev1.sub
+ msaleh@projiotid:~$ gcloud beta pubsub subscriptions pull --auto-ack --max-messages=10 projects/projiotid/subscriptions/dev1.sub
 ┌────────────────────┬─────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
 │        DATA        │    MESSAGE_ID   │                                                             ATTRIBUTES                                                             │
 ├────────────────────┼─────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤

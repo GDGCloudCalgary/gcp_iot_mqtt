@@ -48,61 +48,77 @@ namespace GoogleCloudIoTSample
 
             DateTime dtnow = DateTime.Now;
             long iat = ((DateTimeOffset)dtnow).ToUnixTimeSeconds();
-            long exp = iat + 3600; //expires in 3600 seconds
+            long exp = iat + 3600; // Token expires in 3600 seconds
 
             var claims = new Dictionary<string, object>()
             {
-                {"iat", iat}
-               ,{"exp", exp}
-               ,{"aud",options.projectId} //aud is gcp project
+                {"iat", iat} // Issued at
+               ,{"exp", exp} // expiration time
+               ,{"aud",options.projectId} // audience is gcp project
             };
 
+            X509Certificate x509_roots = new X509Certificate(currentExcutionPath + "\\" + "roots.pem");
+
             X509Certificate2 x509Certificate2 = new X509Certificate2(currentExcutionPath + "\\" + "ia.p12"
-                , "123456789"
+                , "123456789" // Your token password, note: hardcoding password isn't a good security practice
                 , X509KeyStorageFlags.Exportable);
 
             string token = Jose.JWT.Encode(claims
                 , x509Certificate2.PrivateKey
-                , JwsAlgorithm.RS256); // JWT token
+                , JwsAlgorithm.RS256); // Using RSA Signature with SHA-256 asymmetric algorithm
 
-            X509Certificate x509_roots = new X509Certificate(currentExcutionPath + "\\" + "roots.pem");
 
-            MqttClient client = new MqttClient("mqtt.googleapis.com",
-                8883
-                , true
-                , x509_roots //caCert,CA certificate for secure connection
+            MqttClient client = new MqttClient("mqtt.googleapis.com", // Google Cloud mqtt API host
+                8883 // ssl mqtt port
+                , true // secure = true
+                , x509_roots //caCert,CA certificate for secure connection, the CA certificate used to sign the broker certificate you’ll connect to
                 , x509Certificate2 //ClientCert,Client certificate
                 , MqttSslProtocols.TLSv1_2
                 );
 
-            String clientId = "projects/" + options.projectId + "/locations/us-central1/registries/reg1/devices/dev1";
-
-            // register to message received
+            // Subscribe to be notified about received messages,
             client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
 
-            client.Connect(clientId, null, token); //username is null, authentication via JWT
+            // event handler for published messages
+            client.MqttMsgPublished += client_MqttMsgPublished;
+
+            // Building clientId as required by google mqtt 
+            String clientId = "projects/" + options.projectId + "/locations/us-central1/registries/reg1/devices/dev1";
+            
+            // Username is null, authentication via JWT
+            client.Connect(clientId, null, token); 
 
             if (client.IsConnected)
             {
                 //publish 10 messages
                 for (int i = 0; i <= 10; i++)
                 {
-                    Random rnd = new Random();
+
+                    Random rnd = new Random(); // just a random number for sample date
                     string strValue = dtnow + "," + Convert.ToString(rnd.Next());
-                    strValue = strValue + "-n2";
-                    msgId = client.Publish("/devices/dev1/events", Encoding.UTF8.GetBytes(strValue), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, false);
-                    client.MqttMsgPublished += client_MqttMsgPublished;
-                    System.Threading.Thread.Sleep(500);
+                    strValue = strValue + "-anything";
+
+                    byte[] bMessage = Encoding.UTF8.GetBytes(strValue);
+
+                    // This call returns immediately the id assigned to the message that will be sent shortly after. 
+                    // The library works in an asynchronous way with an internal queue and an internal thread for publishing messages.
+                    // An error means that the client made more attempts to send the message but it couldn’t reach the broker
+                    // of course this is true only for QoS level 1 and 2 where an acknowledge sequence from broker is expected
+                    msgId = client.Publish("/devices/dev1/events"
+                        , bMessage
+                        , MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE
+                        , false); //publish a retained message if set to true
+
+                    // 1000ms between each publish
+                    System.Threading.Thread.Sleep(1000);
                 }
-                client.Disconnect(); //flush on disconnect
+                client.Disconnect(); // Flush on disconnect
             }
             else
             {
                 Console.WriteLine("Can not connect to project: {0}", options.projectId);
                 Environment.Exit(0);
             }
-
         }
-
     }
 }
