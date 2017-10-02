@@ -75,7 +75,7 @@ namespace GoogleCloudIoTSample
                 , MqttSslProtocols.TLSv1_2
                 );
 
-            String clientId = "projects/".ToString() + options.projectId.ToString() + "/locations/us-central1/registries/reg1/devices/dev1".ToString();
+            String clientId = "projects/" + options.projectId + "/locations/us-central1/registries/reg1/devices/dev1";
 
             // register to message received
             client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
