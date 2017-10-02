@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gcp_iot_sample": {
+      "commandName": "Project",
+      "commandLineArgs": "-p projiotid"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+﻿NOTE:
+ before you strat sending data:
+	1) make sure enable Core IoT API
+	2) make sure you have pub/sub API enabled
+	3) as of now 1st OCt 2017, make sure your topic name is events or state
+	3) create subscription i.e. dev1.sub
+	4) later once you started publishing you should be able to check your messages within pub/sub 
+		i.e. gcloud beta pubsub subscriptions pull --auto-ack --max-messages=500 projects/projiotid/subscriptions/dev1.sub
+
+
+C:\>openssl genrsa -out ca.key 2048
+C:\>openssl req -new -x509 -days 1826 -key ca.key -out ca.crt  [Note: use unique Common Name (e.g. server FQDN or YOUR name) []:gdgcloudcalgary.com]
+C:\>openssl genrsa -out ia.key 2048
+C:\>openssl req -new -key ia.key -out ia.csr  [Note: use unique Common Name (e.g. server FQDN or YOUR name) []:GDG Cloud]
+C:\>openssl x509 -req -days 730 -in ia.csr -CA ca.crt -CAkey ca.key -set_serial 01 -out ia.crt
+C:\>openssl pkcs12 -export -out ia.p12 -inkey ia.key -in ia.crt -chain -CAfile ca.crt
+
+Note: eventually you need to have:
+	ia.crt to be entered as certificate in Cloud IoT for device. [public key format should be RS256_X509]
+	ia.p12 to be provided to device in field.
+	roots.pem downloaded from http://pki.google.com/roots.pem
+
+Run the application:
+ dotnet gcp_iot_sample.dll -p {projectId}
+
+ dotnet gcp_iot_sample.dll -p projiotid
+
+
+
+
+ saleh@projiotid:~$ gcloud beta pubsub subscriptions pull --auto-ack --max-messages=10 projects/projiotid/subscriptions/dev1.sub
+┌────────────────────┬─────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│        DATA        │    MESSAGE_ID   │                                                             ATTRIBUTES                                                             │
+├────────────────────┼─────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 91870268-netcore   │ 157046742528772 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 1112529124-netcore │ 157043739296464 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 123407504-netcore  │ 157047047052606 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 1857761737-netcore │ 157045708974424 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 397163941-netcore  │ 157047688934500 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 1132624594-netcore │ 157044228826191 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 63024170-netcore   │ 157047249078939 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 1854014913-netcore │ 157044699978046 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 1567046041-netcore │ 157044972336813 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+│ 952543637-netcore  │ 157043904069928 │ deviceId=dev1 deviceNumId=2737264002957021 deviceRegistryId=reg1 deviceRegistryLocation=us-central1 projectId=projiotid subFolder= │
+└────────────────────┴─────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+msaleh@projiotid:~$
