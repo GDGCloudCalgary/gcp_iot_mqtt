@@ -24,7 +24,7 @@ general help for setting up the project on gcp available in "gen certificates he
 
 ## Example
 
-C:\>dotnet gcp_iot_sample.dll -p projiotid -r reg1 -d dev1 -a us-central1
+C:\>dotnet gcp_iot_sample.dll -p projiotid -r reg1 -d dev1 -a us-central1 -t events
 
 Results:
 
