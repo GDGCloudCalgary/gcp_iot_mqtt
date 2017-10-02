@@ -21,10 +21,20 @@ Note: eventually you need to have:
 	roots.pem downloaded from http://pki.google.com/roots.pem
 
 Run the application:
- dotnet gcp_iot_sample.dll -p {projectId}
+ dotnet gcp_iot_sample.dll -p {projectId} -r {registryId} -d {deviceId} -a {cloudRegion}
 
- dotnet gcp_iot_sample.dll -p projiotid
-
+dotnet gcp_iot_sample.dll -p projiotid -r reg1 -d dev1 -a us-central1
+MessageId = 1 Published = True
+MessageId = 2 Published = True
+MessageId = 3 Published = True
+MessageId = 4 Published = True
+MessageId = 5 Published = True
+MessageId = 6 Published = True
+MessageId = 7 Published = True
+MessageId = 8 Published = True
+MessageId = 9 Published = True
+MessageId = 10 Published = True
+MessageId = 11 Published = True
 
 
 

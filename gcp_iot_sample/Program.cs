@@ -33,7 +33,7 @@ namespace GoogleCloudIoTSample
 
         static void Main(string[] args)
         {
-
+            // Command line arguments 
             var options = new Options();
 
             if (CommandLine.Parser.Default.ParseArgumentsStrict(args, options))
@@ -60,7 +60,7 @@ namespace GoogleCloudIoTSample
             X509Certificate x509_roots = new X509Certificate(currentExcutionPath + "\\" + "roots.pem");
 
             X509Certificate2 x509Certificate2 = new X509Certificate2(currentExcutionPath + "\\" + "ia.p12"
-                , "123456789" // Your token password, note: hardcoding password isn't a good security practice
+                , "123456789" // Your certificate password, note: hardcoding password isn't a good security practice
                 , X509KeyStorageFlags.Exportable);
 
             string token = Jose.JWT.Encode(claims
@@ -83,8 +83,8 @@ namespace GoogleCloudIoTSample
             client.MqttMsgPublished += client_MqttMsgPublished;
 
             // Building clientId as required by google mqtt 
-            String clientId = "projects/" + options.projectId + "/locations/us-central1/registries/reg1/devices/dev1";
-            
+            String clientId = "projects/" + options.projectId + "/locations/" + options.cloudRegion + "/registries/" + options.registryId + "/devices/" + options.deviceId;
+            String topic = "/devices/" + options.deviceId + "/events";
             // Username is null, authentication via JWT
             client.Connect(clientId, null, token); 
 
@@ -104,7 +104,7 @@ namespace GoogleCloudIoTSample
                     // The library works in an asynchronous way with an internal queue and an internal thread for publishing messages.
                     // An error means that the client made more attempts to send the message but it couldn’t reach the broker
                     // of course this is true only for QoS level 1 and 2 where an acknowledge sequence from broker is expected
-                    msgId = client.Publish("/devices/dev1/events"
+                    msgId = client.Publish(topic
                         , bMessage
                         , MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE
                         , false); //publish a retained message if set to true
@@ -116,7 +116,7 @@ namespace GoogleCloudIoTSample
             }
             else
             {
-                Console.WriteLine("Can not connect to project: {0}", options.projectId);
+                Console.WriteLine("Can not connect to project: {0} or connection lost.", options.projectId);
                 Environment.Exit(0);
             }
         }
